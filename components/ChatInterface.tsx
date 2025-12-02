@@ -1,6 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Message, Sender, Scenario } from '../types';
-import { sendMessageToAI, initializeChat } from '../services/gemini';
 
 interface ChatInterfaceProps {
   scenario: Scenario;
@@ -14,11 +13,8 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ scenario, onEndSession, o
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Initialize Chat
+  // Initialize Chat (no client-side API key use)
   useEffect(() => {
-    initializeChat(scenario.systemInstruction);
-    
-    // Add initial AI message
     const initialMsg: Message = {
       id: 'init-1',
       text: scenario.initialMessage,
@@ -51,8 +47,44 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ scenario, onEndSession, o
     setIsTyping(true);
 
     try {
-      const responseText = await sendMessageToAI(userText);
+      // Send conversation history + new user message to backend which holds the API key
+      const payload = { messages: [...messages, userMsg], systemInstruction: scenario.systemInstruction };
       
+      // 添加请求超时处理
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30秒超时
+      
+      const r = await fetch('/api/gemini/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+        signal: controller.signal
+      });
+      
+      clearTimeout(timeoutId);
+
+      let responseText = '（对方未回应）';
+
+      if (!r.ok) {
+        // Try to read server-provided error details
+        try {
+          const err = await r.json();
+          // 根据错误类型提供更友好的用户提示
+          if (err?.error?.includes('Network error')) {
+            responseText = `网络连接问题：无法连接到Gemini服务。${err?.details ? '\n技术原因：' + String(err.details).slice(0, 150) : ''}`;
+          } else if (err?.error?.includes('API key')) {
+            responseText = `服务配置问题：API密钥无效。${err?.details ? '\n技术原因：' + String(err.details).slice(0, 150) : ''}`;
+          } else {
+            responseText = `系统错误：${err?.error || '请求失败'}${err?.details ? '\n' + String(err.details).slice(0, 200) : ''}`;
+          }
+        } catch (e) {
+          responseText = `系统错误：HTTP ${r.status}`;
+        }
+      } else {
+        const data = await r.json();
+        responseText = data?.text || responseText;
+      }
+
       const aiMsg: Message = {
         id: (Date.now() + 1).toString(),
         text: responseText,
@@ -61,7 +93,28 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ scenario, onEndSession, o
       };
       setMessages(prev => [...prev, aiMsg]);
     } catch (error) {
-      console.error(error);
+        console.error('Chat request failed:', error);
+        let errorMessage = '网络错误：无法连接到服务器，请检查网络或稍后重试。';
+        
+        // 根据不同的错误类型提供更具体的提示
+        if (error instanceof Error) {
+          if (error.name === 'AbortError') {
+            errorMessage = '请求超时：服务器响应时间过长，请稍后重试。';
+          } else if (error.message.includes('fetch failed') || error.message.includes('Network')) {
+            // 明确指出可能是网络连接到Google API的问题
+            errorMessage = `网络连接失败：无法连接到Gemini服务。\n\n可能的解决方案：\n1. 检查防火墙设置，确保允许连接到Google API\n2. 如果使用VPN，请尝试暂时断开\n3. 检查网络代理设置\n4. 稍后再试，服务可能暂时不可用`;
+          } else {
+            errorMessage = `通信错误：${error.message.slice(0, 100)}`;
+          }
+        }
+        
+        const aiMsg: Message = {
+          id: (Date.now() + 2).toString(),
+          text: errorMessage,
+          sender: Sender.AI,
+          timestamp: new Date()
+        };
+        setMessages(prev => [...prev, aiMsg]);
     } finally {
       setIsTyping(false);
     }

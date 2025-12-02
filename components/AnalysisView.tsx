@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { AnalysisResult, Message, Scenario } from '../types';
-import { analyzeConversation } from '../services/gemini';
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts';
 
 interface AnalysisViewProps {
@@ -29,9 +28,75 @@ const AnalysisView: React.FC<AnalysisViewProps> = ({ messages, scenario, onClose
         return;
       }
 
-      const data = await analyzeConversation(scenario.title, messages);
-      setResult(data);
-      setLoading(false);
+      try {
+        // 添加请求超时处理
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 40000); // 40秒超时
+        
+        const r = await fetch('/api/gemini/analyze', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ scenarioTitle: scenario.title, messages }),
+          signal: controller.signal
+        });
+        
+        clearTimeout(timeoutId);
+        
+        if (!r.ok) {
+          // 处理HTTP错误
+          try {
+            const errorData = await r.json();
+            console.error('Analysis API error:', errorData);
+            
+            // 创建一个错误分析结果
+            setResult({
+              score: 50, // 中性分数
+              summary: `分析服务暂时不可用：${errorData?.error || '服务器错误'}`,
+              strengths: ['对话已完成'],
+              improvements: ['请稍后重新尝试分析功能'],
+              toneAnalysis: '分析过程中断'
+            });
+          } catch (e) {
+            // 无法解析错误响应时的回退
+            setResult({
+              score: 50,
+              summary: `分析服务暂时不可用：HTTP ${r.status}`,
+              strengths: ['对话已完成'],
+              improvements: ['请稍后重新尝试分析功能'],
+              toneAnalysis: '分析过程中断'
+            });
+          }
+        } else {
+          const data = await r.json();
+          setResult(data as AnalysisResult);
+        }
+      } catch (error) {
+        console.error('Analysis fetch failed:', error);
+        
+        // 根据错误类型提供适当的错误分析结果
+        let errorMessage = '分析服务暂时不可用，请稍后重试';
+        
+        if (error instanceof Error) {
+          if (error.name === 'AbortError') {
+            errorMessage = '分析请求超时，请稍后重试';
+          } else if (error.message.includes('fetch failed') || error.message.includes('Network')) {
+            errorMessage = '网络连接问题，无法完成分析';
+          } else {
+            errorMessage = `分析过程中发生错误: ${error.message.slice(0, 50)}`;
+          }
+        }
+        
+        // 创建一个回退的分析结果
+        setResult({
+          score: 50,
+          summary: errorMessage,
+          strengths: ['对话已完成'],
+          improvements: ['请尝试重新分析或检查网络连接'],
+          toneAnalysis: '分析过程中断'
+        });
+      } finally {
+        setLoading(false);
+      }
     };
 
     fetchAnalysis();
