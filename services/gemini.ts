@@ -20,20 +20,20 @@ const mockResponses = {
     
     // 根据用户最后一条消息生成模拟响应
     let content = '';
-    if (lastMessage.content.toLowerCase().includes('hello') || 
-        lastMessage.content.toLowerCase().includes('hi') ||
-        lastMessage.content.includes('你好') ||
-        lastMessage.content.includes('嗨')) {
+    if (lastMessage.text.toLowerCase().includes('hello') || 
+        lastMessage.text.toLowerCase().includes('hi') ||
+        lastMessage.text.includes('你好') ||
+        lastMessage.text.includes('嗨')) {
       content = '你好！我是一个AI助手。很高兴为您提供帮助。您有什么问题想要咨询吗？';
-    } else if (lastMessage.content.toLowerCase().includes('weather') ||
-               lastMessage.content.includes('天气')) {
+    } else if (lastMessage.text.toLowerCase().includes('weather') ||
+               lastMessage.text.includes('天气')) {
       content = '我无法直接获取当前天气信息，但我可以告诉你，保持良好的沟通是解决问题的关键。';
-    } else if (lastMessage.content.toLowerCase().includes('help') ||
-               lastMessage.content.includes('帮助') ||
-               lastMessage.content.includes('怎么')) {
+    } else if (lastMessage.text.toLowerCase().includes('help') ||
+               lastMessage.text.includes('帮助') ||
+               lastMessage.text.includes('怎么')) {
       content = '我可以帮助您解答各种问题，提供建议，或者协助您完成任务。请告诉我您需要什么帮助？';
     } else {
-      content = `我收到了您的消息："${lastMessage.content}"。这是一个离线模式下的模拟响应。要获取真实的AI回复，请确保您的网络连接正常并能够访问Gemini API服务。`;
+      content = `我收到了您的消息："${lastMessage.text}"。这是一个离线模式下的模拟响应。要获取真实的AI回复，请确保您的网络连接正常并能够访问Gemini API服务。`;
     }
     
     return {
@@ -47,8 +47,8 @@ const mockResponses = {
   analyze: (scenarioTitle: string) => {
     return {
       score: 85,
-      feedback: `这是针对"${scenarioTitle}"场景的模拟分析反馈。在离线模式下，无法提供真实的AI分析。`,
-      suggestions: [
+      summary: `这是针对"${scenarioTitle}"场景的模拟分析反馈。在离线模式下，无法提供真实的AI分析。`,
+      strengths: [
         '保持良好的沟通节奏',
         '注意倾听用户需求',
         '提供具体的解决方案',
@@ -58,6 +58,7 @@ const mockResponses = {
         '离线模式下无法提供详细的改进建议',
         '请连接网络以获取更准确的分析',
       ],
+      toneAnalysis: '离线模式下无法提供语调分析',
     };
   },
 };
@@ -90,7 +91,14 @@ export const sendMessageToAI = async (payload: { messages: Message[]; systemInst
       throw new Error(`API响应错误: ${res.status}`);
     }
     
-    return res.json();
+    const data = await res.json();
+    
+    // 将API返回的{ text }格式转换为前端期望的消息格式
+    return {
+      content: data.text,
+      role: 'model' as const,
+      timestamp: new Date().toISOString(),
+    };
   } catch (error) {
     console.error('发送消息到AI失败:', error);
     

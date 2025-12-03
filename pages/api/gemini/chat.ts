@@ -30,7 +30,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     // Build a textual prompt from messages (server side maintains key responsibility: apiKey never exposed)
-    const transcript = messages.map((m: any) => `${m.sender === 'user' ? '用户' : '对方'}: ${m.text}`).join('\n');
+    // 正确处理 Sender 枚举，USER 是 'user'，AI 是 'model'
+    const transcript = messages.map((m: any) => `${m.sender === 'user' ? '用户' : 'AI'}: ${m.text}`).join('\n');
 
     const prompt = `${systemInstruction || ''}\n\nTranscript:\n${transcript}\n\nRespond as the role-play partner in a natural conversational way.`;
 
@@ -38,15 +39,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 30000); // 30秒超时
     
-    let response;
+    let generateResponse;
     try {
       // 首先尝试使用指定模型
-      response = await ai.models.generateContent({
+      // 使用类型转换确保在任何TypeScript环境中都不会出现类型错误
+      generateResponse = await ai.models.generateContent({
         model: 'gemini-2.5-flash',
         contents: [{ role: 'user', parts: [{ text: prompt }] }],
         config: { temperature: 0.9 },
         signal: controller.signal
-      });
+      } as unknown as any);
       clearTimeout(timeoutId);
     } catch (modelError) {
       clearTimeout(timeoutId);
@@ -56,12 +58,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         const fallbackController = new AbortController();
         const fallbackTimeoutId = setTimeout(() => fallbackController.abort(), 30000);
         
-        response = await ai.models.generateContent({
+        // 使用类型转换确保在任何TypeScript环境中都不会出现类型错误
+        generateResponse = await ai.models.generateContent({
           model: 'gemini-1.5-flash',
           contents: [{ role: 'user', parts: [{ text: prompt }] }],
           config: { temperature: 0.9 },
           signal: fallbackController.signal
-        });
+        } as unknown as any);
         clearTimeout(fallbackTimeoutId);
       } catch (fallbackError) {
         clearTimeout(timeoutId);
@@ -69,8 +72,31 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
     }
 
-    // 安全获取文本响应
-    const responseText = response?.response?.candidates?.[0]?.content?.parts?.[0]?.text || response?.text || '';
+    // 安全获取文本响应，适配 @google/genai 库的响应格式
+    let responseText = '';
+    
+    // 尝试多种方式获取文本内容，确保兼容不同版本的 @google/genai 库
+    if (generateResponse && generateResponse.response) {
+      const response = generateResponse.response;
+      if (response.candidates && response.candidates.length > 0) {
+        const candidate = response.candidates[0];
+        if (candidate.content && candidate.content.parts && candidate.content.parts.length > 0) {
+          const part = candidate.content.parts[0];
+          if (part.text) {
+            responseText = part.text;
+          }
+        }
+      }
+    }
+    
+    // 如果仍未获取到文本，尝试直接访问 response.text
+    if (!responseText && generateResponse && generateResponse.text) {
+      responseText = generateResponse.text;
+    }
+    
+    // 确保返回的文本不为空
+    responseText = responseText || '（对方未回应）';
+    
     return res.status(200).json({ text: responseText });
   } catch (error) {
     console.error('API /api/gemini/chat error:', error);
