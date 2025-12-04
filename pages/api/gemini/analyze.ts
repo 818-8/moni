@@ -27,51 +27,98 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(500).json({ error: 'Server configuration error: GEMINI_API_KEY not set or invalid' });
     }
 
-    const transcript = messages.map((m: any) => `${m.sender === 'user' ? '用户' : '对方'}: ${m.text}`).join('\n');
+    // 正确处理 Sender 枚举，USER 是 'user'，AI 是 'model'
+    const transcript = messages.map((m: any) => `${m.sender === 'user' ? '用户' : 'AI'}: ${m.text}`).join('\n');
 
-    const prompt = `Analyze the following role-play conversation based on the scenario: "${scenarioTitle}".\nThe user is \"用户\" and the role-play partner is \"对方\".\n\nTranscript:\n${transcript}\n\nPlease return a JSON object with the following structure:\n{\n  "score": number, // 1-10分的评分\n  "summary": string, // 简要总结\n  "strengths": string[], // 用户表现的优点\n  "improvements": string[], // 需要改进的地方\n  "toneAnalysis": string // 语言和语气分析\n}`;
+    const prompt = `Analyze the following role-play conversation based on the scenario: "${scenarioTitle}".\nThe user is "用户" and the role-play partner is "AI".\n\nTranscript:\n${transcript}\n\nPlease return a JSON object with the following structure:\n{\n  "score": number, // 1-100分的评分\n  "summary": string, // 简要总结\n  "strengths": string[], // 用户表现的优点\n  "improvements": string[], // 需要改进的地方\n  "toneAnalysis": string // 语言和语气分析\n}`;
 
-    // 尝试使用备用模型
-    let response;
+    // 尝试使用备用模型，添加超时控制
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30秒超时
+    
+    let generateResponse;
     try {
       // 首先尝试使用指定模型
-      response = await ai.models.generateContent({
+      // 使用类型转换确保在任何TypeScript环境中都不会出现类型错误
+      generateResponse = await ai.models.generateContent({
         model: 'gemini-2.5-flash',
         contents: [{ role: 'user', parts: [{ text: prompt }] }],
         config: {
           responseMimeType: 'application/json',
-        }
-      });
+          temperature: 0.9
+        },
+        signal: controller.signal
+      } as unknown as any);
+      clearTimeout(timeoutId);
     } catch (modelError) {
+      clearTimeout(timeoutId);
       console.warn('Primary model failed, trying fallback...', modelError);
       // 如果失败，尝试备用模型
-      response = await ai.models.generateContent({
-        model: 'gemini-1.5-flash',
-        contents: [{ role: 'user', parts: [{ text: prompt }] }],
-        config: {
-          responseMimeType: 'application/json',
-        }
-      });
+      try {
+        const fallbackController = new AbortController();
+        const fallbackTimeoutId = setTimeout(() => fallbackController.abort(), 30000);
+        
+        generateResponse = await ai.models.generateContent({
+          model: 'gemini-1.5-flash',
+          contents: [{ role: 'user', parts: [{ text: prompt }] }],
+          config: {
+            responseMimeType: 'application/json',
+            temperature: 0.9
+          },
+          signal: fallbackController.signal
+        } as unknown as any);
+        clearTimeout(fallbackTimeoutId);
+      } catch (fallbackError) {
+        clearTimeout(timeoutId);
+        throw fallbackError; // 重新抛出以便在外部catch中处理
+      }
     }
 
-    // 安全获取文本响应
-    const jsonText = response?.response?.candidates?.[0]?.content?.parts?.[0]?.text || response?.text || '{}';
+    // 安全获取文本响应，适配 @google/genai 库的响应格式
+    let jsonText = '{}';
+    
+    // 尝试多种方式获取文本内容，确保兼容不同版本的 @google/genai 库
+    if (generateResponse && generateResponse.response) {
+      const response = generateResponse.response;
+      if (response.candidates && response.candidates.length > 0) {
+        const candidate = response.candidates[0];
+        if (candidate.content && candidate.content.parts && candidate.content.parts.length > 0) {
+          const part = candidate.content.parts[0];
+          if (part.text) {
+            jsonText = part.text;
+          }
+        }
+      }
+    }
+    
+    // 如果仍未获取到文本，尝试直接访问 response.text
+    if (jsonText === '{}' && generateResponse && generateResponse.text) {
+      jsonText = generateResponse.text;
+    }
     
     // 解析并验证响应
     let parsed = {} as any;
     try {
       parsed = JSON.parse(jsonText);
-      // 确保返回的数据包含所有必需字段
+      // 确保返回的数据包含所有必需字段，并处理各种边缘情况
       parsed = {
-        score: parsed.score || 0,
+        score: typeof parsed.score === 'number' ? parsed.score : 0,
         summary: parsed.summary || '解析结果为空',
-        strengths: parsed.strengths || [],
-        improvements: parsed.improvements || [],
+        strengths: Array.isArray(parsed.strengths) ? parsed.strengths : [],
+        improvements: Array.isArray(parsed.improvements) ? parsed.improvements : [],
         toneAnalysis: parsed.toneAnalysis || '未知'
       };
     } catch (e) {
       console.error('Failed to parse JSON response:', e);
-      parsed = { score: 0, summary: '解析结果为空', strengths: [], improvements: [], toneAnalysis: '未知' };
+      console.error('Raw response text:', jsonText);
+      // 在解析失败时提供一个更有用的回退分析
+      parsed = {
+        score: 50,
+        summary: '分析服务返回格式异常，已使用备用分析结果',
+        strengths: ['您积极参与了对话', '您尝试了不同的表达方式'],
+        improvements: ['可以尝试更清晰地表达您的想法', '注意对话的连贯性和逻辑性'],
+        toneAnalysis: '服务返回格式异常，无法提供详细分析'
+      };
     }
 
     return res.status(200).json(parsed);

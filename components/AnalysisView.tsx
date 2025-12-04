@@ -168,50 +168,86 @@ const AnalysisView: React.FC<AnalysisViewProps> = ({ messages, scenario, onClose
 
         {/* Summary & Tone */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="bg-white rounded-2xl shadow-sm p-6 border border-slate-100">
-             <h3 className="font-semibold text-slate-800 mb-2 flex items-center gap-2">
-                <span className="text-xl">📝</span> 总结
-             </h3>
-             <p className="text-sm text-slate-600 leading-relaxed">{result.summary}</p>
+          <div className="bg-white rounded-2xl shadow-sm p-6 border border-slate-100 relative overflow-hidden">
+             {/* Background image */}
+             <div 
+               className="absolute inset-0 opacity-10 bg-cover bg-center"
+               style={{ 
+                 backgroundImage: `url('https://images.unsplash.com/photo-1516321497487-e288fb19713f?w=500&h=300&fit=crop')`
+               }}
+             ></div>
+             <div className="relative z-10">
+               <h3 className="font-semibold text-slate-800 mb-2 flex items-center gap-2">
+                  <span className="text-xl">📝</span> 总结
+               </h3>
+               <p className="text-sm text-slate-600 leading-relaxed">{result.summary}</p>
+             </div>
           </div>
-          <div className="bg-white rounded-2xl shadow-sm p-6 border border-slate-100">
-             <h3 className="font-semibold text-slate-800 mb-2 flex items-center gap-2">
-                <span className="text-xl">🎭</span> 语气分析
-             </h3>
-             <p className="text-sm text-slate-600 leading-relaxed">{result.toneAnalysis}</p>
+          <div className="bg-white rounded-2xl shadow-sm p-6 border border-slate-100 relative overflow-hidden">
+             {/* Background image */}
+             <div 
+               className="absolute inset-0 opacity-10 bg-cover bg-center"
+               style={{ 
+                 backgroundImage: `url('https://images.unsplash.com/photo-1516321497487-e288fb19713f?w=500&h=300&fit=crop')`
+               }}
+             ></div>
+             <div className="relative z-10">
+               <h3 className="font-semibold text-slate-800 mb-2 flex items-center gap-2">
+                  <span className="text-xl">🎭</span> 语气分析
+               </h3>
+               <p className="text-sm text-slate-600 leading-relaxed">{result.toneAnalysis}</p>
+             </div>
           </div>
         </div>
 
         {/* Strengths */}
-        <div className="bg-white rounded-2xl shadow-sm p-6 border border-slate-100">
-          <h3 className="font-semibold text-green-700 mb-4 flex items-center gap-2">
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-            表现亮点
-          </h3>
-          <ul className="space-y-3">
-            {result.strengths.map((point, i) => (
-              <li key={i} className="flex items-start gap-3 text-sm text-slate-700">
-                <span className="bg-green-100 text-green-600 rounded-full w-5 h-5 flex items-center justify-center text-xs flex-shrink-0 mt-0.5">{i + 1}</span>
-                {point}
-              </li>
-            ))}
-          </ul>
+        <div className="bg-white rounded-2xl shadow-sm p-6 border border-slate-100 relative overflow-hidden">
+          {/* Background image */}
+          <div 
+            className="absolute inset-0 opacity-10 bg-cover bg-center"
+            style={{ 
+              backgroundImage: `url('https://images.unsplash.com/photo-1516321497487-e288fb19713f?w=500&h=300&fit=crop')`
+            }}
+          ></div>
+          <div className="relative z-10">
+            <h3 className="font-semibold text-green-700 mb-4 flex items-center gap-2">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+              表现亮点
+            </h3>
+            <ul className="space-y-3">
+              {result.strengths.map((point, i) => (
+                <li key={i} className="flex items-start gap-3 text-sm text-slate-700">
+                  <span className="bg-green-100 text-green-600 rounded-full w-5 h-5 flex items-center justify-center text-xs flex-shrink-0 mt-0.5">{i + 1}</span>
+                  {point}
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
 
         {/* Improvements */}
-        <div className="bg-white rounded-2xl shadow-sm p-6 border border-slate-100">
-          <h3 className="font-semibold text-orange-600 mb-4 flex items-center gap-2">
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
-            提升建议
-          </h3>
-          <ul className="space-y-3">
-            {result.improvements.map((point, i) => (
-              <li key={i} className="flex items-start gap-3 text-sm text-slate-700">
-                 <span className="bg-orange-100 text-orange-600 rounded-full w-5 h-5 flex items-center justify-center text-xs flex-shrink-0 mt-0.5">{i + 1}</span>
-                {point}
-              </li>
-            ))}
-          </ul>
+        <div className="bg-white rounded-2xl shadow-sm p-6 border border-slate-100 relative overflow-hidden">
+          {/* Background image */}
+          <div 
+            className="absolute inset-0 opacity-10 bg-cover bg-center"
+            style={{ 
+              backgroundImage: `url('https://images.unsplash.com/photo-1516321497487-e288fb19713f?w=500&h=300&fit=crop')`
+            }}
+          ></div>
+          <div className="relative z-10">
+            <h3 className="font-semibold text-orange-600 mb-4 flex items-center gap-2">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+              提升建议
+            </h3>
+            <ul className="space-y-3">
+              {result.improvements.map((point, i) => (
+                <li key={i} className="flex items-start gap-3 text-sm text-slate-700">
+                   <span className="bg-orange-100 text-orange-600 rounded-full w-5 h-5 flex items-center justify-center text-xs flex-shrink-0 mt-0.5">{i + 1}</span>
+                  {point}
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
 
         {/* Actions */}

@@ -107,11 +107,18 @@ const App: React.FC = () => {
                  </h2>
                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 relative z-10">
                    {CATEGORY_OBJECTIVES[filterCategory]?.map((objective, index) => (
-                     <div key={index} className="flex items-start bg-white/80 backdrop-blur-sm p-3 rounded-xl border border-indigo-50 shadow-sm hover:shadow-md transition-shadow">
-                        <span className="flex-shrink-0 w-6 h-6 flex items-center justify-center bg-indigo-100 text-indigo-600 rounded-full text-xs font-bold mr-3 mt-0.5">
+                     <div key={index} className="flex items-start relative bg-white/80 backdrop-blur-sm p-3 rounded-xl border border-indigo-50 shadow-sm hover:shadow-md transition-shadow overflow-hidden">
+                        {/* Background image */}
+                        <div 
+                          className="absolute inset-0 opacity-5 bg-cover bg-center"
+                          style={{ 
+                            backgroundImage: `url('https://images.unsplash.com/photo-1516321497487-e288fb19713f?w=500&h=300&fit=crop')`
+                          }}
+                        ></div>
+                        <span className="flex-shrink-0 w-6 h-6 flex items-center justify-center bg-indigo-100 text-indigo-600 rounded-full text-xs font-bold mr-3 mt-0.5 relative z-10">
                           {index + 1}
                         </span>
-                        <p className="text-sm text-slate-600 font-medium leading-relaxed">{objective}</p>
+                        <p className="text-sm text-slate-600 font-medium leading-relaxed relative z-10">{objective}</p>
                      </div>
                    ))}
                  </div>

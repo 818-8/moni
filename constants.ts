@@ -2,13 +2,13 @@
 import { Category, Difficulty, Scenario } from './types';
 
 export const SCENARIOS: Scenario[] = [
-  {
-    id: 'dorm_conflict_cleaning',
+  {    id: 'dorm_conflict_cleaning',
     title: '室友不打扫卫生',
     description: '你的室友已经连续两周没有倒垃圾了，宿舍里开始有异味。你需要委婉但坚定地提醒他/她履行值日职责。',
     category: Category.DORM,
     difficulty: Difficulty.MEDIUM,
     icon: '🧹',
+    backgroundImage: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=500&h=300&fit=crop',
     initialMessage: '（戴着耳机在打游戏）哎呀，别烦我，这局关键呢。垃圾堆那儿又不碍事，明天再说吧。',
     systemInstruction: `
       You are playing the role of a college roommate who is lazy and defensive about cleaning. 
@@ -26,13 +26,13 @@ export const SCENARIOS: Scenario[] = [
       - Do not give in immediately. Make the user work for it.
     `
   },
-  {
-    id: 'academic_extension',
+  {    id: 'academic_extension',
     title: '向严厉教授请假',
     description: '期末作业截止日期是明天，但你因为突发生病没法完成。你需要向以严厉著称的王教授申请延期两天。',
     category: Category.ACADEMIC,
     difficulty: Difficulty.HARD,
     icon: '👨‍🏫',
+    backgroundImage: 'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=500&h=300&fit=crop',
     initialMessage: '进来。有什么事快说，我马上有个会。如果是关于明天截止的作业，除非你有极其特殊的理由，否则免谈。',
     systemInstruction: `
       You are Professor Wang, a strict and busy academic professor.
@@ -49,13 +49,13 @@ export const SCENARIOS: Scenario[] = [
       - If the user is respectful, concise, and provides a valid reason (illness) with a promise of proof, you can grant the extension but with a penalty or warning.
     `
   },
-  {
-    id: 'romance_confession',
+  {    id: 'romance_confession',
     title: '婉拒追求者',
     description: '一个关系不错的异性朋友突然向你表白，但你只把他/她当朋友。你需要得体地拒绝，尽量不伤害这段友情。',
     category: Category.ROMANCE,
     difficulty: Difficulty.HARD,
     icon: '💌',
+    backgroundImage: 'https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=500&h=300&fit=crop',
     initialMessage: '其实...我喜欢你很久了。我知道这很突然，但我想知道，我们有没有可能在一起？',
     systemInstruction: `
       You are a close friend of the user who has just confessed romantic feelings.
@@ -72,13 +72,13 @@ export const SCENARIOS: Scenario[] = [
       - If the user is kind, firm, and emphasizes the value of friendship, accept the rejection with grace but sadness.
     `
   },
-  {
-    id: 'career_networking',
+  {    id: 'career_networking',
     title: '社团面试自我介绍',
     description: '你正在参加全校最热门的辩论队的面试。请在简短的互动中展示你的逻辑思维和自信，回答学长刁钻的问题。',
     category: Category.CAREER,
     difficulty: Difficulty.MEDIUM,
     icon: '🎤',
+    backgroundImage: 'https://images.unsplash.com/photo-1573164713988-8665fc963095?w=500&h=300&fit=crop',
     initialMessage: '坐吧。看你的简历，你并没有辩论经验。那你凭什么觉得你能胜任我们辩论队的高强度训练？',
     systemInstruction: `
       You are a senior student leader of the Debate Team.
@@ -94,13 +94,13 @@ export const SCENARIOS: Scenario[] = [
       - Evaluate confidence.
     `
   },
-  {
-    id: 'social_party',
+  {    id: 'social_party',
     title: '社恐破冰',
     description: '在一次跨学院的联谊活动上，你谁都不认识。旁边站着一个看起来也很落单的同学，试着开启话题。',
     category: Category.SOCIAL,
     difficulty: Difficulty.EASY,
     icon: '🥤',
+    backgroundImage: 'https://images.unsplash.com/photo-1513002749550-c59d786b8e6c?w=500&h=300&fit=crop',
     initialMessage: '（低头看着手机，看起来有点尴尬）...呃，这人好多啊。',
     systemInstruction: `
       You are a shy student at a party who doesn't know anyone.
@@ -115,13 +115,13 @@ export const SCENARIOS: Scenario[] = [
       - Reply in Chinese (Simplified).
     `
   },
-  {
-    id: 'interpersonal_misunderstanding',
+  {    id: 'interpersonal_misunderstanding',
     title: '化解朋友误会',
     description: '你的好朋友最近对你很冷淡，原来是因为你之前开玩笑说他“重色轻友”让他当真了。你需要解释清楚那只是玩笑，并修复这段关系。',
     category: Category.INTERPERSONAL,
     difficulty: Difficulty.MEDIUM,
     icon: '🤝',
+    backgroundImage: 'https://images.unsplash.com/photo-1536535562139-d7523c630e7d?w=500&h=300&fit=crop',
     initialMessage: '（冷冷地）找我干嘛？既然我在你心里就是那种重色轻友的人，还需要跟我这种人做朋友吗？',
     systemInstruction: `
       You are a close friend of the user who is hurt and angry.

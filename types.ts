@@ -35,6 +35,7 @@ export interface Scenario {
   systemInstruction: string;
   initialMessage: string; // The first message the AI sends to start the roleplay
   icon: string; // Emoji
+  backgroundImage?: string; // Optional background image URL
 }
 
 export interface AnalysisResult {

@@ -48,16 +48,25 @@ const ScenarioCard: React.FC<ScenarioCardProps> = ({ scenario, onClick, onUpdate
   return (
     <div 
       onClick={() => !isEditing && onClick(scenario)}
-      className={`bg-white rounded-xl shadow-sm hover:shadow-md transition-all duration-300 border border-slate-100 p-5 flex flex-col h-full group ${!isEditing ? 'cursor-pointer active:scale-95' : 'cursor-default'}`}
+      className={`bg-white rounded-xl shadow-sm hover:shadow-md transition-all duration-300 border border-slate-100 p-5 flex flex-col h-full group relative overflow-hidden ${!isEditing ? 'cursor-pointer active:scale-95' : 'cursor-default'}`}
+      style={{ 
+        backgroundImage: scenario.backgroundImage ? `url(${scenario.backgroundImage})` : 'none',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center'
+      }}
     >
-      <div className="flex justify-between items-start mb-3">
+      {/* Background overlay for better text readability */}
+      {scenario.backgroundImage && (
+        <div className="absolute inset-0 bg-gradient-to-br from-white/80 to-white/50 z-0"></div>
+      )}
+      <div className="flex justify-between items-start mb-3 relative z-10">
         <div className="text-4xl group-hover:scale-110 transition-transform duration-300">{scenario.icon}</div>
         <span className={`text-xs font-semibold px-2 py-1 rounded-full border ${getDifficultyColor(scenario.difficulty)}`}>
           {scenario.difficulty}
         </span>
       </div>
       
-      <div className="flex justify-between items-center mb-2">
+      <div className="flex justify-between items-center mb-2 relative z-10">
         <h3 className="text-lg font-bold text-slate-800">{scenario.title}</h3>
         {!isEditing && onUpdateDescription && (
           <button 
@@ -71,7 +80,7 @@ const ScenarioCard: React.FC<ScenarioCardProps> = ({ scenario, onClick, onUpdate
       </div>
       
       {isEditing ? (
-        <div className="flex-grow flex flex-col mb-4">
+        <div className="flex-grow flex flex-col mb-4 relative z-10">
           <textarea
             value={tempDescription}
             onChange={(e) => setTempDescription(e.target.value)}
@@ -95,7 +104,7 @@ const ScenarioCard: React.FC<ScenarioCardProps> = ({ scenario, onClick, onUpdate
           </div>
         </div>
       ) : (
-        <p className="text-slate-500 text-sm line-clamp-3 mb-4 flex-grow">
+        <p className="text-slate-500 text-sm line-clamp-3 mb-4 flex-grow relative z-10">
           {scenario.description}
         </p>
       )}

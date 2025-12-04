@@ -152,8 +152,15 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ scenario, onEndSession, o
       {/* Messages Area */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-hide">
         <div className="flex justify-center my-4">
-           <div className="bg-slate-200 text-slate-600 text-xs py-1 px-4 rounded-full max-w-[90%] text-center">
-             场景目标：{scenario.description}
+           <div className="bg-slate-200 text-slate-600 text-xs py-1 px-4 rounded-full max-w-[90%] text-center relative overflow-hidden">
+             {/* Background image for scenario target */}
+             <div 
+               className="absolute inset-0 opacity-15 bg-cover bg-center"
+               style={{ 
+                 backgroundImage: `url('https://images.unsplash.com/photo-1516321497487-e288fb19713f?w=500&h=300&fit=crop')`
+               }}
+             ></div>
+             <div className="relative z-10">场景目标：{scenario.description}</div>
            </div>
         </div>
 
@@ -163,22 +170,38 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ scenario, onEndSession, o
             className={`flex w-full ${msg.sender === Sender.USER ? 'justify-end' : 'justify-start'}`}
           >
             <div className={`
-              max-w-[80%] rounded-2xl px-4 py-3 text-sm leading-relaxed shadow-sm
+              max-w-[80%] rounded-2xl px-4 py-3 text-sm leading-relaxed shadow-sm relative overflow-hidden
               ${msg.sender === Sender.USER 
                 ? 'bg-indigo-600 text-white rounded-br-none' 
                 : 'bg-white text-slate-800 border border-slate-200 rounded-bl-none'}
             `}>
-              {msg.text}
+              {/* Background image for messages */}
+              <div 
+                className={`absolute inset-0 opacity-${msg.sender === Sender.USER ? '20' : '10'} bg-cover bg-center`}
+                style={{ 
+                  backgroundImage: `url('https://images.unsplash.com/photo-1516321497487-e288fb19713f?w=500&h=300&fit=crop')`
+                }}
+              ></div>
+              <div className="relative z-10">{msg.text}</div>
             </div>
           </div>
         ))}
         
         {isTyping && (
           <div className="flex justify-start w-full">
-            <div className="bg-white border border-slate-200 rounded-2xl rounded-bl-none px-4 py-3 shadow-sm flex space-x-1 items-center">
-              <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-              <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-              <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+            <div className="bg-white border border-slate-200 rounded-2xl rounded-bl-none px-4 py-3 shadow-sm flex space-x-1 items-center relative overflow-hidden">
+              {/* Background image for typing indicator */}
+              <div 
+                className="absolute inset-0 opacity-10 bg-cover bg-center"
+                style={{ 
+                  backgroundImage: `url('https://images.unsplash.com/photo-1516321497487-e288fb19713f?w=500&h=300&fit=crop')`
+                }}
+              ></div>
+              <div className="relative z-10">
+                <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+              </div>
             </div>
           </div>
         )}

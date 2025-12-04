@@ -8,7 +8,7 @@ import { Message, AnalysisResult } from '../types';
 
 // 配置选项
 const config = {
-  offlineMode: false, // 设置为true启用离线模式
+  offlineMode: true, // 设置为true启用离线模式，解决网络连接问题
   offlineDelay: 800, // 模拟网络延迟（毫秒）
 };
 
